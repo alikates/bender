@@ -451,6 +451,7 @@ where
 enum SourceType {
     Verilog,
     Vhdl,
+    CXX
 }
 
 fn relativize_path(path: &std::path::Path, root: &std::path::Path) -> String {
@@ -510,6 +511,7 @@ fn emit_template(
     let mut all_files = vec![];
     let mut all_verilog = vec![];
     let mut all_vhdl = vec![];
+    let mut all_cxx = vec![];
     for src in &srcs {
         all_defines.extend(
             src.defines
@@ -564,6 +566,7 @@ fn emit_template(
                 SourceFile::File(p) => match p.extension().and_then(std::ffi::OsStr::to_str) {
                     Some("sv") | Some("v") | Some("vp") => Some(SourceType::Verilog),
                     Some("vhd") | Some("vhdl") => Some(SourceType::Vhdl),
+                    Some("cpp") | Some("cxx") | Some("c") => Some(SourceType::CXX),
                     _ => None,
                 },
                 _ => None,
@@ -601,6 +604,7 @@ fn emit_template(
                     file_type: match ty {
                         SourceType::Verilog => "verilog".to_string(),
                         SourceType::Vhdl => "vhdl".to_string(),
+                        SourceType::CXX => "cxx".to_string(),
                     },
                 });
             },
@@ -613,6 +617,9 @@ fn emit_template(
             }
             "vhdl" => {
                 all_vhdl.append(&mut src.files.clone().into_iter().collect());
+            }
+            "cxx" => {
+                all_cxx.append(&mut src.files.clone().into_iter().collect());
             }
             _ => {}
         }
@@ -636,8 +643,15 @@ fn emit_template(
         } else {
             IndexSet::new()
         };
+    let all_cxx: IndexSet<PathBuf> =
+        if !matches.get_flag("only-defines") && !matches.get_flag("only-includes") {
+            all_cxx.into_iter().collect()
+        } else {
+            IndexSet::new()
+        };
     tera_context.insert("all_verilog", &all_verilog);
     tera_context.insert("all_vhdl", &all_vhdl);
+    tera_context.insert("all_cxx", &all_cxx);
 
     let vlog_args: Vec<String> = if let Some(args) = matches.get_many::<String>("vlog-arg") {
         args.map(Into::into).collect()
