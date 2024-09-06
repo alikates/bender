@@ -757,6 +757,7 @@ pub fn copy_recursively(
         }
 
         let filetype = entry.file_type()?;
+        let canonical_path_filetype = std::fs::metadata(std::fs::canonicalize(entry.path()).unwrap()).unwrap().file_type();
         if filetype.is_dir() {
             copy_recursively(
                 entry.path(),
@@ -764,8 +765,8 @@ pub fn copy_recursively(
                 includes,
                 ignore,
             )?;
-        } else if filetype.is_symlink() {
-            let orig = std::fs::read_link(entry.path());
+        } else if filetype.is_symlink() && canonical_path_filetype.is_dir() {
+            let orig = std::fs::canonicalize(entry.path());
             symlink_dir(orig.unwrap(), destination.as_ref().join(entry.file_name()))?;
         } else {
             std::fs::copy(entry.path(), destination.as_ref().join(entry.file_name())).map_err(
