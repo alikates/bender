@@ -12,8 +12,8 @@ ROOT="{{ root }}"
     {% endfor %}{% for incdir in group.incdirs %}"+incdir+{{ incdir | replace(from=root, to='$ROOT') }}" \
     {% endfor %}{% elif group.file_type == 'vhdl' %}{{ vhdlan_bin }} \
     {% for tmp_arg in vcom_args %}{{ tmp_arg }} \
-    {% endfor %}{% endif %}{% for file in group.files %}"{{ file | replace(from=root, to='$ROOT') }}" {% if not loop.last %}\
-    {% endif %}{% endfor %}
+    {% endfor %}{% endif %}{% if group.file_type != 'cxx' %}{% for file in group.files %}"{{ file | replace(from=root, to='$ROOT') }}" {% if not loop.last %}\
+    {% endif %}{% endfor %}{% endif %}
 {% endfor %}
 {% else %}{# compilation_mode == 'common' #}{% for file in all_verilog %}{% if loop.first %}{{ vlogan_bin }} -sverilog \
     -full64 \
