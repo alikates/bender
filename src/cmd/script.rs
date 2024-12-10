@@ -450,6 +450,7 @@ where
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 enum SourceType {
     Verilog,
+    EncryptedVerilog,
     Vhdl,
     CXX
 }
@@ -509,6 +510,7 @@ fn emit_template(
     let mut all_defines = IndexMap::new();
     let mut all_incdirs = vec![];
     let mut all_files = vec![];
+    let mut all_encrypted_verilog = vec![];
     let mut all_verilog = vec![];
     let mut all_vhdl = vec![];
     let mut all_cxx = vec![];
@@ -565,6 +567,7 @@ fn emit_template(
             |f| match f {
                 SourceFile::File(p) => match p.extension().and_then(std::ffi::OsStr::to_str) {
                     Some("sv") | Some("v") | Some("vp") | Some("vh") => Some(SourceType::Verilog),
+                    Some("svp") => Some(SourceType::Verilog),
                     Some("vhd") | Some("vhdl") => Some(SourceType::Vhdl),
                     Some("cpp") | Some("cxx") | Some("c") | Some("cc") => Some(SourceType::CXX),
                     _ => None,
@@ -603,6 +606,7 @@ fn emit_template(
                         .collect(),
                     file_type: match ty {
                         SourceType::Verilog => "verilog".to_string(),
+                        SourceType::EncryptedVerilog => "encryptedverilog".to_string(),
                         SourceType::Vhdl => "vhdl".to_string(),
                         SourceType::CXX => "cxx".to_string(),
                     },
@@ -614,6 +618,9 @@ fn emit_template(
         match src.file_type.as_str() {
             "verilog" => {
                 all_verilog.append(&mut src.files.clone().into_iter().collect());
+            }
+            "encryptedverilog" => {
+                all_encrypted_verilog.append(&mut src.files.clone().into_iter().collect());
             }
             "vhdl" => {
                 all_vhdl.append(&mut src.files.clone().into_iter().collect());
