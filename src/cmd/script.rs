@@ -567,7 +567,7 @@ fn emit_template(
             |f| match f {
                 SourceFile::File(p) => match p.extension().and_then(std::ffi::OsStr::to_str) {
                     Some("sv") | Some("v") | Some("vp") | Some("vh") => Some(SourceType::Verilog),
-                    Some("svp") => Some(SourceType::Verilog),
+                    Some("svp") => Some(SourceType::EncryptedVerilog),
                     Some("vhd") | Some("vhdl") => Some(SourceType::Vhdl),
                     Some("cpp") | Some("cxx") | Some("c") | Some("cc") => Some(SourceType::CXX),
                     _ => None,
